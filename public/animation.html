@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Collision Animation</title>
+<style>
+    body {
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+    }
+    canvas {
+        display: block;
+        background-color: #f0f0f0;
+    }
+</style>
+</head>
+<body>
+<canvas id="myCanvas"></canvas>
+<script>
+    const canvas = document.getElementById('myCanvas');
+    const ctx = canvas.getContext('2d');
+
+    onresize=()=>{
+        // Set canvas width and height
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    }
+
+    // Set canvas width and height
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    // Define shape class
+    class Shape {
+        constructor(x, y, radius, color) {
+            this.x = x;
+            this.y = y;
+            this.radius = radius;
+            this.color = color;
+            this.dx = Math.random() * 7 ; // random velocity in x direction
+            this.dy = Math.random() * 7 ; // random velocity in y direction
+        }
+
+        draw() {
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+            ctx.fillStyle = this.color;
+            ctx.fill();
+            ctx.closePath();
+        }
+
+        update() {
+            // Move shape
+            this.x += this.dx;
+            this.y += this.dy;
+
+            // Handle collisions with canvas edges
+            if (this.x + this.radius > canvas.width || this.x - this.radius < 0) {
+                this.dx *= -1;
+            }
+            if (this.y + this.radius > canvas.height || this.y - this.radius < 0) {
+                this.dy *= -1;
+            }
+
+            // Detect and handle collisions with other shapes
+            for (let shape of shapes) {
+                if (shape !== this) {
+                    const dx = this.x - shape.x;
+                    const dy = this.y - shape.y;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+                    if (distance < this.radius + shape.radius) {
+                        // Collision detected, reverse velocities
+                      /*  const angle = Math.atan2(dy, dx);
+                        const targetX = this.x + Math.cos(angle) * (this.radius + shape.radius);
+                        const targetY = this.y + Math.sin(angle) * (this.radius + shape.radius);
+                        const ax = (targetX - shape.x) * 0.1;
+                        const ay = (targetY - shape.y) * 0.1;
+                        this.dx -= ax;
+                        this.dy -= ay;
+                        shape.dx += ax;
+                        shape.dy += ay; */
+                        shape.dx=-this.dx
+                        shape.dy=-this.dy
+                        this.dx=-shape.dx
+                        this.dy=-shape.dy
+                    }
+                }
+            }
+        }
+    }
+
+    // Create shapes
+    const numShapes = 50;
+    const shapes = [];
+    for (let i = 0; i < numShapes; i++) {
+        const radius = 15; // random radius between 10 and 30
+        const x = Math.random() * (canvas.width - radius * 2) + radius;
+        const y = Math.random() * (canvas.height - radius * 2) + radius;
+        const color = `rgb(${Math.random() * 255},${Math.random() * 255},${Math.random() * 255})`;
+        shapes.push(new Shape(x, y, radius, color));
+    }
+
+    // Animation loop
+    function animate() {
+        requestAnimationFrame(animate);
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        for (let shape of shapes) {
+            shape.update();
+            shape.draw();
+        }
+    }
+    animate();
+</script>
+</body>
+</html>
